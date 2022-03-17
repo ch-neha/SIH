@@ -1,7 +1,9 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:sih/locationInfo.dart';
 import 'map.dart';
+import 'package:alan_voice/alan_voice.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,6 +13,7 @@ class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
   @override
+  
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
@@ -18,6 +21,11 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: const MyHomePage(title: 'Accessibility Map'),
+      initialRoute: '/',
+      routes: {
+        '/map': (context)=>const Map(),
+        '/theater' : (context)=>const LocationInfo(),
+      }
     );
   }
 }
@@ -32,7 +40,39 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  bool _greetingIsPlayed = false;
+  _MyHomePageState() {
+    /// Init Alan Button with project key from Alan Studio      
+    AlanVoice.addButton("03dbf72798fc92e5fe159ea32bf375122e956eca572e1d8b807a3e2338fdd0dc/stage");
+    AlanVoice.onButtonState.add((state) {
+      if (state.name == "ONLINE" && !_greetingIsPlayed) {
+        _greetingIsPlayed = true;
+        AlanVoice.activate();
+        AlanVoice.playText("Hello! I'm Alan, your voice assistent. How can I help you?");
+      }
+    });
+
+    /// Handle commands from Alan Studio
+    AlanVoice.onCommand.add((command) => _handleCommand(command.data));
+  }
+
+  _handleCommand(var command){
+      switch(command["command"]){
+        case "forward":
+          Navigator.pushNamed(context,'/map');
+          break;
+        case "back to home":
+          Navigator.pop(context);
+          break;
+        case "go to theatre":
+          Navigator.pushNamed(context,'/theater');
+          break;
+      }
+  }
+
   @override
+
+
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
